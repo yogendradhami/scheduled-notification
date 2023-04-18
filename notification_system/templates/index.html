@@ -1,3 +1,53 @@
+<style>
+    .notification {
+        background-color: #0d6efd;
+        color: white;
+        text-decoration: none;
+        padding: 4px 24px;
+        margin-right: 20px;
+        margin-left: 20px;
+        position: relative;
+        display: inline-block;
+        border-radius: 2px;
+        font-size: 20px;
+    }
+
+    .notification:hover {
+        background: #0b5ed7;
+        color: #fff;
+    }
+
+    .notification .badge {
+        position: absolute;
+        top: -10px;
+        right: -10px;
+        padding: 8px 8px;
+        border-radius: 50%;
+        background: red;
+        color: white;
+    }
+
+    .notification-section .dropdown-toggle::after {
+        content: none;
+    }
+
+    .dropdown-toggle::after {
+        color: #fff;
+    }
+
+    #notifications-dropdown li {
+        max-width: 500px;
+        word-wrap: break-word;
+        display: inline-block;
+        white-space: normal;
+    }
+
+    #notifications-dropdown.dropdown-menu {
+        width: 15rem;
+    }
+    
+</style>
+
 <nav class="navbar navbar-expand-lg bg-light">
     <div class="container-fluid">
       <a class="navbar-brand" href="#">Navbar</a>
@@ -31,6 +81,81 @@
           <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search">
           <button class="btn btn-outline-success" type="submit">Search</button>
         </form>
+        <li class="nav-item dropdown notification-section">
+            <a href="#" class="notification dropdown-toggle" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="true">
+                <span><i class="fa-solid fa-bell"></i></span>
+                <span class="badge" id="notification-badge">0</span>
+            </a>
+            <ul class="dropdown-menu" aria-labelledby="navbarDropdown" id="notifications-dropdown" data-popper-placement="bottom-end" style="position: absolute; inset:0px auto 0px; margin: 0px; transform:  translate3d(-70px, 42px, 0px);  "
+            >
+            {% for i in notifications %}
+            <li class="dropdown-item">{{i.message}}</li>
+            <hr class="dropdown-divider">
+            {% endfor %}
+            {% comment %} <li class='dropdown-item'>Hello</li>
+            <hr class="dropdown-divider"> {% endcomment %}
+</ul>
+        </li>
+
+
+        <div class="flex-shrink-0 dropdown" style="margin-right: 20px">
+            <a href="#" class="d-block link-dark text-decoration-none dropdown-toggle show" id="dropdownUser2"
+                data-bs-toggle="dropdown" aria-expanded="true">
+                <img src="https://avatars.githubusercontent.com/u/46575019?v=4" alt="mdo" width="50" height="50"
+                    class="rounded-circle">
+            </a>
+            <ul class="dropdown-menu text-small shadow" aria-labelledby="dropdownUser2"
+                data-popper-placement="bottom-end"
+                style="position: absolute; inset: 0px auto auto 0px; margin: 0px; transform: translate3d(-110px, 50px, 0px);">
+                <li><a class="dropdown-item" href="#">New project...</a></li>
+                <li><a class="dropdown-item" href="#">Settings</a></li>
+                <li><a class="dropdown-item" href="#">Profile</a></li>
+                <li>
+                    <hr class="dropdown-divider">
+                </li>
+                <li><a class="dropdown-item" href="#">Sign out</a></li>
+            </ul>
+        </div>
+
       </div>
     </div>
   </nav>
+
+  {{ room_name|json_script:"room-name" }}
+  <script>
+      const roomName = JSON.parse(document.getElementById('room-name').textContent);
+
+      const chatSocket = new WebSocket(
+          'ws://'
+          + window.location.host
+          + '/ws/notification/'
+          + roomName
+          + '/'
+      );
+
+      chatSocket.onmessage = function(e) {
+          const data = JSON.parse(e.data);
+          {% comment %} document.querySelector('#chat-log').value += (data.message + '\n'); {% endcomment %}
+      };
+
+      chatSocket.onclose = function(e) {
+          console.error('Chat socket closed unexpectedly');
+      };
+
+      {% comment %} document.querySelector('#chat-message-input').focus();
+      document.querySelector('#chat-message-input').onkeyup = function(e) {
+          if (e.keyCode === 13) {  // enter, return
+              document.querySelector('#chat-message-submit').click();
+          }
+      }; {% endcomment %}
+
+      {% comment %} document.querySelector('#chat-message-submit').onclick = function(e) {
+          const messageInputDom = document.querySelector('#chat-message-input');
+          const message = messageInputDom.value;
+          chatSocket.send(JSON.stringify({
+              'message': message
+          }));
+          messageInputDom.value = '';
+      }; {% endcomment %}
+  </script>
+  
